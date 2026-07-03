@@ -1,0 +1,85 @@
+name: AI Weekly Digest
+
+on:
+  schedule:
+    # 02:00 UTC every Monday = 08:00 in a UTC+6 company timezone.
+    # Adjust the hour here if your company's local timezone differs.
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Pipeline mode to run'
+        required: true
+        default: 'build'
+        type: choice
+        options:
+          - build
+          - send
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: github.event_name == 'schedule' || github.event.inputs.mode == 'build'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run build (collect, score, summarize, preview to maintainer)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ secrets.OPENROUTER_MODEL }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_NAME: ${{ secrets.SENDER_NAME }}
+          MAINTAINER_EMAIL: ${{ secrets.MAINTAINER_EMAIL }}
+          DRY_RUN: ${{ secrets.DRY_RUN }}
+        run: python main.py --mode build
+
+      - name: Persist data files back to the repo
+        run: |
+          git config user.name "ai-weekly-digest-bot"
+          git config user.email "actions@github.com"
+          git add data/sent_history.json data/last_digest.json
+          git diff --staged --quiet || git commit -m "chore: update digest data [skip ci]"
+          git push
+
+  send:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'send'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run send (approved preview -> full recipient list)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ secrets.OPENROUTER_MODEL }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_NAME: ${{ secrets.SENDER_NAME }}
+          MAINTAINER_EMAIL: ${{ secrets.MAINTAINER_EMAIL }}
+          DRY_RUN: ${{ secrets.DRY_RUN }}
+        run: python main.py --mode send
+
+      - name: Persist sent history back to the repo
+        run: |
+          git config user.name "ai-weekly-digest-bot"
+          git config user.email "actions@github.com"
+          git add data/sent_history.json
+          git diff --staged --quiet || git commit -m "chore: record sent digest [skip ci]"
+          git push

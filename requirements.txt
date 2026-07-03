@@ -1,0 +1,7 @@
+feedparser
+requests
+rapidfuzz
+Jinja2
+python-dotenv
+PyYAML
+pytest

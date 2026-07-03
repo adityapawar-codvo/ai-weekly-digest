@@ -1,0 +1,73 @@
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f7;">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background-color:{{ accent_color }};border-radius:8px 8px 0 0;padding:24px 32px;" align="left">
+            <span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:bold;color:#ffffff;">AI Weekly Digest</span>
+            <br>
+            <span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#e8e6ff;">{{ date_str }}</span>
+          </td>
+        </tr>
+
+        <!-- Intro -->
+        <tr>
+          <td style="padding:24px 32px 8px 32px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#333333;">
+            {{ intro_line }}
+          </td>
+        </tr>
+
+        {% if top_picks %}
+        <!-- TL;DR -->
+        <tr>
+          <td style="padding:8px 32px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f7;border-radius:6px;">
+              <tr>
+                <td style="padding:16px 20px;font-family:Arial,Helvetica,sans-serif;">
+                  <span style="font-size:13px;font-weight:bold;letter-spacing:0.5px;color:{{ accent_color }};text-transform:uppercase;">TL;DR — Top picks this week</span>
+                  {% for item in top_picks %}
+                  <div style="margin-top:10px;">
+                    <a href="{{ item.url }}" style="font-size:14px;font-weight:bold;color:#1a1a2e;text-decoration:none;">{{ item.title }}</a>
+                    <div style="font-size:13px;color:#555555;line-height:19px;margin-top:2px;">{{ item.summary }}</div>
+                  </div>
+                  {% endfor %}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        {% endif %}
+
+        <!-- Category sections -->
+        {% for category in categories %}
+        <tr>
+          <td style="padding:20px 32px 4px 32px;font-family:Arial,Helvetica,sans-serif;">
+            <span style="font-size:16px;font-weight:bold;color:#1a1a2e;">{{ category.emoji }} {{ category.name }}</span>
+          </td>
+        </tr>
+        {% for item in category.entries %}
+        <tr>
+          <td style="padding:8px 32px;font-family:Arial,Helvetica,sans-serif;border-bottom:1px solid #eeeeee;">
+            <a href="{{ item.url }}" style="font-size:15px;font-weight:bold;color:{{ accent_color }};text-decoration:none;">{{ item.title }}</a>
+            <div style="font-size:14px;line-height:20px;color:#333333;margin-top:4px;">{{ item.summary }}</div>
+            <div style="margin-top:6px;">
+              <a href="{{ item.url }}" style="font-size:12px;color:#888888;text-decoration:none;">Read more &rarr;</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:24px 32px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#999999;border-top:1px solid #eeeeee;">
+            You're receiving this because you're on the AI Weekly Digest list. Sources and summaries are AI-assisted — check the original article for full context.
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>

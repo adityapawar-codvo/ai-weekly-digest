@@ -1,0 +1,23 @@
+AI WEEKLY DIGEST — {{ date_str }}
+
+{{ intro_line }}
+
+{% if top_picks %}
+TL;DR — TOP PICKS THIS WEEK
+{% for item in top_picks %}
+* {{ item.title }}
+  {{ item.summary }}
+  {{ item.url }}
+{% endfor %}
+{% endif %}
+{% for category in categories %}
+{{ category.emoji }} {{ category.name.upper() }}
+{% for item in category.entries %}
+- {{ item.title }}
+  {{ item.summary }}
+  Read more: {{ item.url }}
+{% endfor %}
+{% endfor %}
+---
+You're receiving this because you're on the AI Weekly Digest list. Sources and
+summaries are AI-assisted — check the original article for full context.

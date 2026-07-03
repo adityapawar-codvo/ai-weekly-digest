@@ -1,0 +1,38 @@
+# AI news sources for the weekly digest collector.
+# type: rss  -> parsed with feedparser
+# type: hn   -> Hacker News (Algolia Search API), filtered by query
+#
+# Edit freely — the collector skips any source that fails without crashing the run.
+
+sources:
+  - name: OpenAI
+    type: rss
+    url: https://openai.com/news/rss.xml
+
+  # Anthropic does not publish an official RSS feed as of writing. Their newsroom
+  # is at https://www.anthropic.com/news — add an unofficial third-party feed here
+  # if you want Anthropic coverage without relying on Hacker News picking it up.
+
+  - name: Google AI
+    type: rss
+    url: https://blog.google/technology/ai/rss/
+
+  - name: Microsoft AI
+    type: rss
+    url: https://blogs.microsoft.com/ai/feed/
+
+  - name: The Verge AI
+    type: rss
+    url: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+
+  - name: TechCrunch AI
+    type: rss
+    url: https://techcrunch.com/category/artificial-intelligence/feed/
+
+  - name: MIT Technology Review AI
+    type: rss
+    url: https://www.technologyreview.com/topic/artificial-intelligence/feed
+
+  - name: Hacker News
+    type: hn
+    query: AI

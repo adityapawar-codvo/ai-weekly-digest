@@ -1,0 +1,5 @@
+# Full recipient list for the "send" mode (used only after the maintainer approves
+# the preview). Kept to the maintainer's own address until a real test group exists.
+recipients:
+  - aditya.pawar@codvo.ai
+  - atharva.dhemare@codvo.ai
