@@ -49,14 +49,23 @@ def score_items(items: list[dict]) -> list[dict]:
         result = get_llm_response(prompt, json_mode=True)
 
         if not isinstance(result, list):
-            logger.error("Scorer batch failed to parse, dropping %d items from scoring", len(batch))
+            logger.error("Scorer batch failed to parse, using fallback score for %d items", len(batch))
+            for item in batch:
+                scores_by_id[item["id"]] = {
+                    "score": DEFAULT_SCORE,
+                    "score_reason": "fallback score (LLM unavailable)",
+                }
             continue
 
         for entry in result:
             if not isinstance(entry, dict) or "id" not in entry:
                 continue
+            try:
+                score = int(entry.get("score", DEFAULT_SCORE))
+            except (ValueError, TypeError):
+                score = DEFAULT_SCORE
             scores_by_id[entry["id"]] = {
-                "score": entry.get("score", DEFAULT_SCORE),
+                "score": score,
                 "score_reason": entry.get("score_reason", ""),
             }
 
@@ -65,7 +74,20 @@ def score_items(items: list[dict]) -> list[dict]:
         if item["id"] in scores_by_id:
             scored_items.append({**item, **scores_by_id[item["id"]]})
         else:
-            logger.warning("No score returned for item %s (%s), dropping", item["id"], item["title"])
+            logger.warning("No score for item %s (%s), using fallback", item["id"], item["title"])
+            scored_items.append({
+                **item,
+                "score": DEFAULT_SCORE,
+                "score_reason": "fallback score (no LLM response)",
+            })
+
+    scored_items = [
+        i for i in scored_items
+        if isinstance(i.get("score"), int)
+    ]
+    if not scored_items:
+        logger.warning("No items scored after processing")
+        return []
 
     scored_items.sort(key=lambda i: i["score"], reverse=True)
     return scored_items[:KEEP_TOP_N]

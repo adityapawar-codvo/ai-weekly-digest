@@ -23,7 +23,7 @@ def _load_yaml(path: Path) -> dict:
 
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-4-scout:free")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash")
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL", "")

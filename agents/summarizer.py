@@ -46,19 +46,28 @@ def summarize_items(items: list[dict]) -> list[dict]:
         result = get_llm_response(prompt, json_mode=True)
 
         if not isinstance(result, list):
-            logger.error("Summarizer batch failed to parse, dropping %d items", len(batch))
+            logger.error("Summarizer batch failed to parse, using fallback summary for %d items", len(batch))
+            for item in batch:
+                summaries_by_id[item["id"]] = item.get("raw_content", "")[:300]
             continue
 
         for entry in result:
-            if not isinstance(entry, dict) or "id" not in entry or not entry.get("summary"):
+            if not isinstance(entry, dict) or "id" not in entry:
                 continue
-            summaries_by_id[entry["id"]] = entry["summary"]
+            summaries_by_id[entry["id"]] = entry.get("summary", "")
 
     summarized = []
     for item in items:
         if item["id"] in summaries_by_id:
-            summarized.append({**item, "summary": summaries_by_id[item["id"]]})
+            summary = summaries_by_id[item["id"]]
         else:
-            logger.warning("No summary returned for item %s (%s), dropping", item["id"], item["title"])
+            logger.warning("No summary for item %s (%s), using raw content", item["id"], item["title"])
+            summary = item.get("raw_content", "")[:300]
+
+        if summary:
+            summarized.append({**item, "summary": summary})
+        else:
+            logger.warning("Empty summary for item %s (%s), using title as fallback", item["id"], item["title"])
+            summarized.append({**item, "summary": item.get("title", "")})
 
     return summarized

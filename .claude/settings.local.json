@@ -9,7 +9,12 @@
       "Bash(git init *)",
       "Bash(git config *)",
       "Bash(git add *)",
-      "Bash(git commit -m 'Initial commit: AI Weekly Digest Agent pipeline *)"
+      "Bash(git commit -m 'Initial commit: AI Weekly Digest Agent pipeline *)",
+      "Bash(python main.py --mode build)",
+      "Bash(python3 main.py --mode build)",
+      "Bash(pip3 install *)",
+      "Bash(pkill -f \"python3 main.py\")",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

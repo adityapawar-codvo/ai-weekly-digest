@@ -15,8 +15,9 @@ logger = logging.getLogger(__name__)
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 JSON_ONLY_INSTRUCTION = (
-    "\n\nRespond with ONLY valid JSON. No prose, no explanation, no markdown code "
-    "fences — just the raw JSON value."
+    "\n\n[CRITICAL] You must respond with ONLY valid JSON that can be parsed by Python's "
+    "json.loads(). No prose, no explanation, no markdown code fences, no extra text. "
+    "Start with [ or { and end with ] or }. Every response must be parseable JSON."
 )
 
 
@@ -53,11 +54,18 @@ def get_llm_response(prompt: str, *, json_mode: bool = False, max_retries: int =
         "Content-Type": "application/json",
     }
 
-    delay = 2
+    delay = 1
     response_text = None
     for attempt in range(1, max_retries + 1):
         try:
             resp = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=60)
+            # Don't retry on auth errors (401, 403) — they won't resolve with retries
+            if resp.status_code in (401, 403):
+                logger.error(
+                    "OpenRouter auth error %s (attempt %d/%d): invalid API key or permissions",
+                    resp.status_code, attempt, max_retries,
+                )
+                break
             if resp.status_code == 429 or resp.status_code >= 500:
                 logger.warning(
                     "OpenRouter transient error %s (attempt %d/%d), retrying in %ds",
@@ -71,11 +79,16 @@ def get_llm_response(prompt: str, *, json_mode: bool = False, max_retries: int =
             response_text = data["choices"][0]["message"]["content"]
             break
         except (requests.RequestException, KeyError, IndexError, ValueError) as exc:
-            logger.warning(
-                "OpenRouter call failed (attempt %d/%d): %s", attempt, max_retries, exc
-            )
-            time.sleep(delay)
-            delay *= 2
+            if attempt < max_retries:
+                logger.warning(
+                    "OpenRouter call failed (attempt %d/%d): %s", attempt, max_retries, exc
+                )
+                time.sleep(delay)
+                delay *= 2
+            else:
+                logger.warning(
+                    "OpenRouter call failed (attempt %d/%d): %s", attempt, max_retries, exc
+                )
 
     if response_text is None:
         logger.error("OpenRouter call failed after %d attempts.", max_retries)
