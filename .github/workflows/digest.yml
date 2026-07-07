@@ -41,6 +41,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Debug - Check environment variables
+        run: |
+          echo "Checking if secrets are loaded..."
+          python -c "
+          import os
+          keys = ['OPENROUTER_API_KEY', 'OPENROUTER_MODEL', 'BREVO_API_KEY', 'SENDER_EMAIL', 'SENDER_NAME', 'MAINTAINER_EMAIL', 'DRY_RUN']
+          for key in keys:
+            val = os.getenv(key, '')
+            status = '✓' if val else '✗'
+            print(f'{status} {key}: {\"SET\" if val else \"MISSING\"}')"
+
       - name: Run build (collect, score, summarize, preview to maintainer)
         run: python main.py --mode build
 
